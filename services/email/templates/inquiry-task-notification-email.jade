@@ -1,0 +1,7 @@
+extends ./layout
+
+block content
+    h3 You have a new or updated inquiry task on Study #{task.Study.code}:
+
+    p You can see the task by logging in and visiting:
+    p <a href=#{task.url}>#{task.url}</a>

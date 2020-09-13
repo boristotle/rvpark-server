@@ -1,0 +1,16 @@
+{
+  "development": {
+    "username": "",
+    "password": null,
+    "database": "rvpark",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  },
+  "production": {
+    "username": "asdf",
+    "password": "kajdsf",
+    "database": "rvpark",
+    "host": "asdf",
+    "dialect": "postgres"
+  }
+}

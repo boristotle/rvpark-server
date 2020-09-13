@@ -1,0 +1,13 @@
+/node_modules
+/.idea
+
+npm-debug.log
+
+subjectImages/
+exports/
+/public/docs/**
+
+/.vscode
+/visitLogs
+/userExports
+/inquiryExports
