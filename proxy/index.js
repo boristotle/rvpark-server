@@ -26,7 +26,7 @@ var server = http.createServer(function(req, res) {
         req.url =req.url.substring(4);
 	server = 'http://127.0.0.1:3001'
   }else{
-	server = 'http://127.0.0.1:3000'
+	server = 'http://127.0.0.1:8000'
 	console.log(req.url);
   }
   proxy.web(req, res, {
