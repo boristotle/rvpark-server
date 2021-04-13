@@ -20,8 +20,7 @@ router.post("/payment", async (req, res) => {
     let error;
     let status;
     try {
-      const { product, token } = req.body; // add token back in here for LIVE
-  
+      const { formData, token } = req.body;
       const customer = await stripe.customers.create({
         email: token.email,
         source: token.id
@@ -30,11 +29,11 @@ router.post("/payment", async (req, res) => {
       const idempotency_key = uuid();
       const charge = await stripe.charges.create(
         {
-          amount: product.price * 100,
+          amount: formData.totalPrice,
           currency: "usd",
           customer: customer.id,
-          receipt_email: token.email,
-          description: `Purchased the ${product.name}`,
+          receipt_email: token.email, // email is not set in client yet
+          description: `Purchased site number ${formData.selectedSite.number}`,
           shipping: {
             name: token.card.name,
             address: {
@@ -50,7 +49,7 @@ router.post("/payment", async (req, res) => {
           idempotency_key
         }
       );
-      console.log("Charge:", { charge });
+      console.log("Charge:", charge);
       status = "success";
     } catch (error) {
       console.error("Error:", error);
