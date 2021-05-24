@@ -49,7 +49,8 @@ router.post("/payment", async (req, res) => {
           idempotencyKey
         }
       );
-      console.log("Charge:", charge);
+        console.log("Charge:", charge);
+        console.log('formData', formData);
       status = "success";
     } catch (error) {
       console.error("Error:", error);
@@ -103,6 +104,27 @@ router.post('/available-sites',
 router.post('/book',
     async function(req, res, next) {
         try {
+            // formData in payment route: {
+                    // alert: { },
+                    // adults: 1,
+                    // kids: 0,
+                    // pets: 0,
+                    // totalPrice: 299.7,
+                    // subTotal: 270,
+                    // taxes: 29.7,
+                    // checkin: '5/25/2021',
+                    // checkout: '5/31/2021',
+                    // guestDisplay: '1 Adult/ 0 Kids/ 0 Pets',
+                    // unitType: 'motorhome-towing',
+                    // selectedSite:
+                    //     {
+                    //         id: 1,
+                    //         number: 1,
+                    //         price: 45,
+                    //         createdAt: '2020-08-23T12:39:01.141Z',
+                    //         updatedAt: '2020-08-23T12:39:01.141Z'
+                    //     }
+                    // }
             const booking = req.body;
             //{ "firstName": "Darrin",
             // "lastName": "Bennett",
