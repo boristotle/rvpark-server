@@ -3,7 +3,7 @@ const router = require('express').Router();
 const db = require('../services/data');
 const { Site, Booking } = db.models;
 const op = require('sequelize').Op;
-const SECRET_KEY = 'sk_test_51IFU8YCfUXRmPJhQ1ipAgwHLIcCMIqXyPyxBLPYkygHfq8oFYNFey6yyuAAtiQQlnGBoPB8uvWVlJXQ0I5rokbik0064PgKYDu'
+const SECRET_KEY = 'sk_test_51IFU8YCfUXRmPJhQqbVSVo5flhCV5VuolsKxBhJhth3IRVr0GotXjYPmN5SJvO3cgQBNxEBHutpvOF51h9gMVE2e00XlCcdTYQ'
 const stripe = require("stripe")(SECRET_KEY);
 const uuid = require('uuid');
 // const UserModel = db.models.User;
@@ -26,10 +26,10 @@ router.post("/payment", async (req, res) => {
         source: token.id
       });
   
-      const idempotency_key = uuid();
+      const idempotencyKey = uuid();
       const charge = await stripe.charges.create(
         {
-          amount: formData.totalPrice,
+          amount: formData.totalPrice * 100,
           currency: "usd",
           customer: customer.id,
           receipt_email: token.email, // email is not set in client yet
@@ -46,7 +46,7 @@ router.post("/payment", async (req, res) => {
           }
         },
         {
-          idempotency_key
+          idempotencyKey
         }
       );
       console.log("Charge:", charge);
