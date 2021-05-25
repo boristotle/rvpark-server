@@ -14,31 +14,35 @@ router.get("/", (req, res) => {
   });
 
 async function saveReservationAfterPayment(data) {
-            const booking = {...data};
+    const booking = {...data, SiteId: data.selectedSite.id};
 
-            booking.startDate = new Date(
-                booking.startDate.slice(6,10),
-                booking.startDate.slice(0,2) - 1,
-                booking.startDate.slice(3,5),
-                -4,
-                0,
-                0,
-                0
-            );
+    // TODO: set the times correctly on these stamps
+    // TODO: remove dashes from phone numbers
+    const startDateSplit = booking.checkin.split('/');
+    const endDateSplit = booking.checkout.split('/');
+    booking.startDate = new Date(
+        startDateSplit[2],
+        startDateSplit[0] - 1,
+        startDateSplit[1],
+        -4,
+        0,
+        0,
+        0
+    );
 
-            booking.endDate = new Date(
-                booking.endDate.slice(6,10),
-                booking.endDate.slice(0,2) - 1,
-                booking.endDate.slice(3,5),
-                -4,
-                0,
-                0,
-                0
-            );
+    booking.endDate = new Date(
+        endDateSplit[2],
+        endDateSplit[0] - 1,
+        endDateSplit[1],
+        -4,
+        0,
+        0,
+        0
+    );
 
-            const savedBooking = await Booking.create(booking);
+    const savedBooking = await Booking.create(booking);
 
-            return savedBooking;
+    return savedBooking;
 }
 
   
@@ -53,18 +57,19 @@ router.post("/payment", async (req, res) => {
                 SiteId: formData.selectedSite.id,
                 [op.and]: [
                     {
-                        startDate: { [op.gt]: new Date(bookingInfo.startDate) },
-                        startDate: { [op.lt]: new Date(bookingInfo.endDate) },
+                        startDate: { [op.gt]: new Date(formData.checkin) },
+                        startDate: { [op.lt]: new Date(formData.checkout) },
                     },
                     {
-                        endDate: { [op.lt]: new Date(bookingInfo.endDate) },
-                        endDate: { [op.gt]: new Date(bookingInfo.startDate) },
+                        endDate: { [op.lt]: new Date(formData.checkout) },
+                        endDate: { [op.gt]: new Date(formData.checkin) },
                     }
                 ]
             }
         });
+        console.log('isSiteBooked', isSiteBooked);
 
-        if (isSiteBooked.length > 0) {
+        if (isSiteBooked && isSiteBooked.length > 0) {
             res.status = 400;
             return res.json({error: 'Site has just been booked. Please select a different site.'})
         }
@@ -73,6 +78,7 @@ router.post("/payment", async (req, res) => {
         email: formData.email,
         source: token.id
       });
+        console.log('formData', formData);
   
       const idempotencyKey = uuid();
       const charge = await stripe.charges.create(
@@ -104,6 +110,7 @@ router.post("/payment", async (req, res) => {
         console.log('booking', booking);
         return res.json({status: 'success', booking});
     } catch (error) {
+        console.log('error', error);
       res.status = 400;
       return res.json({status: 'failure', error: error.message});
     }
@@ -139,7 +146,6 @@ router.post('/available-sites',
 
             // console.log('bookingsDuringThisTimeFrame', bookingsDuringThisTimeFrame);
             const unavailableSites = bookingsDuringThisTimeFrame.map(b => b.SiteId);
-
             const availableSites = await Site.findAll({where: { id: {[op.notIn]: unavailableSites}}});
     
             return res.json({ availableSites, numberOfNights });
