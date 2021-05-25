@@ -46,6 +46,7 @@ router.post("/payment", async (req, res) => {
     // console.log("Request:", req.body);
 
     try {
+        const { formData, token } = req.body;
         // TODO: checks that the site isn't already booked 
         const isSiteBooked = await Booking.findAll({
             where: {
@@ -68,7 +69,6 @@ router.post("/payment", async (req, res) => {
             return res.json({error: 'Site has just been booked. Please select a different site.'})
         }
 
-      const { formData, token } = req.body;
       const customer = await stripe.customers.create({
         email: formData.email,
         source: token.id
