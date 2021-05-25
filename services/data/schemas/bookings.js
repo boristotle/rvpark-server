@@ -3,11 +3,14 @@
 const Sequelize = require('sequelize');
 
 module.exports = {
-    firstName: {
+    email: {
         type: Sequelize.STRING,
     },
-    lastName: {
+    name: {
         type: Sequelize.STRING,
+    },
+    phone: {
+        type: Sequelize.STRING
     },
     SiteId: {
         type: Sequelize.INTEGER,
@@ -28,7 +31,10 @@ module.exports = {
     adults: {
         type: Sequelize.INTEGER
     },
-    price: {
+    totalPrice: {
+        type: Sequelize.INTEGER
+    },
+    taxes: {
         type: Sequelize.INTEGER
     },
     startDate: {

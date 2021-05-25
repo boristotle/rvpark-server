@@ -13,13 +13,61 @@ router.get("/", (req, res) => {
     res.send("Add your Stripe Secret Key to the .require('stripe') statement!");
   });
 
+async function saveReservationAfterPayment(data) {
+            const booking = {...data};
+
+            booking.startDate = new Date(
+                booking.startDate.slice(6,10),
+                booking.startDate.slice(0,2) - 1,
+                booking.startDate.slice(3,5),
+                -4,
+                0,
+                0,
+                0
+            );
+
+            booking.endDate = new Date(
+                booking.endDate.slice(6,10),
+                booking.endDate.slice(0,2) - 1,
+                booking.endDate.slice(3,5),
+                -4,
+                0,
+                0,
+                0
+            );
+
+            const savedBooking = await Booking.create(booking);
+
+            return savedBooking;
+}
+
   
 router.post("/payment", async (req, res) => {
-    console.log("Request:", req.body);
+    // console.log("Request:", req.body);
 
-    let error;
-    let status;
     try {
+        // TODO: checks that the site isn't already booked 
+        const isSiteBooked = await Booking.findAll({
+            where: {
+                SiteId: formData.selectedSite.id,
+                [op.and]: [
+                    {
+                        startDate: { [op.gt]: new Date(bookingInfo.startDate) },
+                        startDate: { [op.lt]: new Date(bookingInfo.endDate) },
+                    },
+                    {
+                        endDate: { [op.lt]: new Date(bookingInfo.endDate) },
+                        endDate: { [op.gt]: new Date(bookingInfo.startDate) },
+                    }
+                ]
+            }
+        });
+
+        if (isSiteBooked.length > 0) {
+            res.status = 400;
+            return res.json({error: 'Site has just been booked. Please select a different site.'})
+        }
+
       const { formData, token } = req.body;
       const customer = await stripe.customers.create({
         email: token.email,
@@ -30,7 +78,7 @@ router.post("/payment", async (req, res) => {
       const charge = await stripe.charges.create(
         {
           amount: formData.totalPrice * 100,
-          currency: "usd",
+          currency: 'usd',
           customer: customer.id,
           receipt_email: token.email, // email is not set in client yet
           description: `Purchased site number ${formData.selectedSite.number}`,
@@ -49,15 +97,16 @@ router.post("/payment", async (req, res) => {
           idempotencyKey
         }
       );
-        console.log("Charge:", charge);
+    
+        const booking = await saveReservationAfterPayment(formData);
+        console.log('Charge:', charge);
         console.log('formData', formData);
-      status = "success";
+        console.log('booking', booking);
+        return res.json({status: 'success', booking});
     } catch (error) {
-      console.error("Error:", error);
-      status = "failure";
+      res.status = 400;
+      return res.json({status: 'failure', error: error.message});
     }
-  
-    res.json({ error, status });
 });
   
 
@@ -71,7 +120,7 @@ router.post('/available-sites',
             // "startDate": "10/12/2020", unavailable if startDate is greater than bookingInfo.startDate and startDate less than bookingInfo.endDate AND
             // "endDate": "10/12/2020" unavailable if endDate less than bookingInfo.endDate and endDate greater than bookingInfo.startDate
             const bookingsDuringThisTimeFrame = await Booking.findAll({
-                where: { 
+                where: {
                     [op.and]: [
                         {
                             startDate: { [op.gt]: new Date(bookingInfo.startDate) },
@@ -101,20 +150,20 @@ router.post('/available-sites',
         }
 });
 
-router.post('/book',
+router.post('/book', // NOT USED CURRENTLY
     async function(req, res, next) {
         try {
             // formData in payment route: {
-                    // alert: { },
+                    // name: 'Darrin Bennett',
+                    // phone: '877-444-3432,
                     // adults: 1,
+                    // email: 'boristotle@hotmail.com',
                     // kids: 0,
                     // pets: 0,
                     // totalPrice: 299.7,
-                    // subTotal: 270,
                     // taxes: 29.7,
                     // checkin: '5/25/2021',
                     // checkout: '5/31/2021',
-                    // guestDisplay: '1 Adult/ 0 Kids/ 0 Pets',
                     // unitType: 'motorhome-towing',
                     // selectedSite:
                     //     {
@@ -126,16 +175,6 @@ router.post('/book',
                     //     }
                     // }
             const booking = req.body;
-            //{ "firstName": "Darrin",
-            // "lastName": "Bennett",
-            // "SiteId": 2,
-            // "unitType": "travel trailer",
-            // "pets": 6,
-            // "kids": 1,
-            // "adults": 2,
-            // "price": 450.5,
-            // "startDate": "10/01/2020",
-            // "endDate": "10/11/2020" }
 
             booking.startDate = new Date(
                 booking.startDate.slice(6,10),
@@ -163,6 +202,7 @@ router.post('/book',
             return res.json(savedBooking);
 
         } catch (err) {
+            res.status = 400;
             return res.json(err);
         }  
 });
