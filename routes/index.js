@@ -70,7 +70,7 @@ router.post("/payment", async (req, res) => {
 
       const { formData, token } = req.body;
       const customer = await stripe.customers.create({
-        email: token.email,
+        email: formData.email,
         source: token.id
       });
   
@@ -80,7 +80,7 @@ router.post("/payment", async (req, res) => {
           amount: formData.totalPrice * 100,
           currency: 'usd',
           customer: customer.id,
-          receipt_email: token.email, // email is not set in client yet
+          receipt_email: formData.email, // email is not set in client yet
           description: `Purchased site number ${formData.selectedSite.number}`,
           shipping: {
             name: token.card.name,
