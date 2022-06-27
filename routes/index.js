@@ -106,9 +106,9 @@ router.post("/payment", async (req, res) => {
         formData.SiteId = formData.selectedSite.id;
 
         const booking = await saveReservationAfterPayment(formData);
-        console.log('Charge:', charge);
-        console.log('formData', formData);
-        console.log('booking', booking);
+        // console.log('Charge:', charge);
+        // console.log('formData', formData);
+        // console.log('booking', booking);
         return res.json({status: 'success', booking});
     } catch (error) {
         console.log('error', error);
