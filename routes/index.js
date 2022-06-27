@@ -16,42 +16,41 @@ router.get("/", (req, res) => {
 async function saveReservationAfterPayment(data) {
     const booking = {...data, SiteId: data.selectedSite.id};
 
-    // TODO: set the times correctly on these stamps
-    // TODO: remove dashes from phone numbers
-    const startDateSplit = booking.checkin.split('/');
-    const endDateSplit = booking.checkout.split('/');
-    booking.startDate = new Date(
-        startDateSplit[2],
-        startDateSplit[0] - 1,
-        startDateSplit[1],
-        -4,
-        0,
-        0,
-        0
-    );
+            const startDate = booking.startDate.split('/');
+            const endDate = booking.endDate.split('/');
 
-    booking.endDate = new Date(
-        endDateSplit[2],
-        endDateSplit[0] - 1,
-        endDateSplit[1],
-        -4,
-        0,
-        0,
-        0
-    );
+            booking.startDate = new Date(
+                startDate[2],
+                startDate[1],
+                startDate[0],
+                -4,
+                0,
+                0,
+                0
+            );
+
+            booking.endDate = new Date(
+                endDate[2],
+                endDate[1],
+                endDate[0],
+                -4,
+                0,
+                0,
+                0
+            );
 
     const savedBooking = await Booking.create(booking);
 
     return savedBooking;
 }
 
-  
+ 
 router.post("/payment", async (req, res) => {
     // console.log("Request:", req.body);
 
     try {
         const { formData, token } = req.body;
-        // TODO: checks that the site isn't already booked 
+        // TODO: checks that the site isn't already booked
         const isSiteBooked = await Booking.findAll({
             where: {
                 SiteId: formData.selectedSite.id,
@@ -74,36 +73,38 @@ router.post("/payment", async (req, res) => {
             return res.json({error: 'Site has just been booked. Please select a different site.'})
         }
 
-      const customer = await stripe.customers.create({
-        email: formData.email,
-        source: token.id
-      });
-        console.log('formData', formData);
-  
-      const idempotencyKey = uuid();
-      const charge = await stripe.charges.create(
-        {
-          amount: formData.totalPrice * 100,
-          currency: 'usd',
-          customer: customer.id,
-          receipt_email: formData.email, // email is not set in client yet
-          description: `Purchased site number ${formData.selectedSite.number}`,
-          shipping: {
-            name: token.card.name,
-            address: {
-              line1: token.card.address_line1,
-              line2: token.card.address_line2,
-              city: token.card.address_city,
-              country: token.card.address_country,
-              postal_code: token.card.address_zip
+        const customer = await stripe.customers.create({
+            email: formData.email,
+            source: token.id
+        });
+ 
+        const total = Math.round(formData.totalPrice * 100);
+        const idempotencyKey = uuid();
+        const charge = await stripe.charges.create(
+            {
+            amount: total,
+            currency: 'usd',
+            customer: customer.id,
+            receipt_email: formData.email, // email is not set in client yet
+            description: `Purchased site number ${formData.selectedSite.number}`,
+            shipping: {
+                name: token.card.name,
+                address: {
+                line1: token.card.address_line1,
+                line2: token.card.address_line2,
+                city: token.card.address_city,
+                country: token.card.address_country,
+                postal_code: token.card.address_zip
+                }
             }
-          }
-        },
-        {
-          idempotencyKey
-        }
-      );
-    
+            },
+            {
+            idempotencyKey
+            }
+        );
+       
+        formData.SiteId = formData.selectedSite.id;
+
         const booking = await saveReservationAfterPayment(formData);
         console.log('Charge:', charge);
         console.log('formData', formData);
@@ -115,14 +116,14 @@ router.post("/payment", async (req, res) => {
       return res.json({status: 'failure', error: error.message});
     }
 });
-  
+ 
 
 router.post('/available-sites',
     async function(req, res, next) {
         try {
             const bookingInfo = req.body; //{ startDate: 'MM/DD/YYYY', endDate: 'MM/DD/YYYY', type?: 'travel-trailer'}
             // console.log('bookingInfo', bookingInfo);
-    
+   
             // to find all bookings for this time frame
             // "startDate": "10/12/2020", unavailable if startDate is greater than bookingInfo.startDate and startDate less than bookingInfo.endDate AND
             // "endDate": "10/12/2020" unavailable if endDate less than bookingInfo.endDate and endDate greater than bookingInfo.startDate
@@ -146,10 +147,12 @@ router.post('/available-sites',
 
             // console.log('bookingsDuringThisTimeFrame', bookingsDuringThisTimeFrame);
             const unavailableSites = bookingsDuringThisTimeFrame.map(b => b.SiteId);
+            console.log('unavailableSites', unavailableSites);
+
             const availableSites = await Site.findAll({where: { id: {[op.notIn]: unavailableSites}}});
-    
+   
             return res.json({ availableSites, numberOfNights });
-            
+           
         } catch (err) {
             // console.log('err', err);
             return res.json(err);
@@ -202,7 +205,7 @@ router.post('/book', // NOT USED CURRENTLY
                 0
             );
 
-            // TODO:  add a before save hook that checks that the site isn't already booked 
+            // TODO:  add a before save hook that checks that the site isn't already booked
             const savedBooking = await Booking.create(booking);
 
             return res.json(savedBooking);
@@ -213,13 +216,13 @@ router.post('/book', // NOT USED CURRENTLY
         }  
 });
 
-router.post('/stats', 
+router.post('/stats',
     async function (req, res, next) {
         try {
             const bookingInfo = req.body;
             // Find all bookings between the startDate and endDate
             const bookings = await Booking.findAll({
-                where: { 
+                where: {
                     [op.and]: [
                         {
                             startDate: { [op.gt]: new Date(bookingInfo.startDate) },
@@ -238,7 +241,7 @@ router.post('/stats',
             // console.log('numberOfDaysAvailable', numberOfDaysAvailable)
 
             let numberOfDaysBooked = 0;
-            bookings.forEach((b) => { 
+            bookings.forEach((b) => {
                 // console.log('b', b);
                 const hours = Math.abs(new Date(b.endDate).getTime() - new Date(b.startDate).getTime()) / 3600000;
                 const numberOfDays = Math.round(hours / 24);
@@ -248,7 +251,7 @@ router.post('/stats',
 
             // earnings for time frame
             const income = bookings.reduce((acc, inc) => acc + inc.price, 0);
-            
+           
             // occupancy rate for time frame
             const numberOfSites = await Site.count();
             // console.log('numberOfSites', numberOfSites);
