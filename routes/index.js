@@ -47,6 +47,27 @@ async function saveReservationAfterPayment(data) {
  
 router.post("/payment", async (req, res) => {
     // console.log("Request:", req.body);
+    // formData in payment route: {
+        // name: 'Darrin Bennett',
+        // phone: '877-444-3432,
+        // adults: 1,
+        // email: 'boristotle@hotmail.com',
+        // kids: 0,
+        // pets: 0,
+        // totalPrice: 299.7,
+        // taxes: 29.7,
+        // checkin: '5/25/2021',
+        // checkout: '5/31/2021',
+        // unitType: 'motorhome-towing',
+        // selectedSite:
+        //     {
+        //         id: 1,
+        //         number: 1,
+        //         price: 45,
+        //         createdAt: '2020-08-23T12:39:01.141Z',
+        //         updatedAt: '2020-08-23T12:39:01.141Z'
+        //     }
+        // }
 
     try {
         const { formData, token } = req.body;
@@ -159,62 +180,6 @@ router.post('/available-sites',
         }
 });
 
-router.post('/book', // NOT USED CURRENTLY
-    async function(req, res, next) {
-        try {
-            // formData in payment route: {
-                    // name: 'Darrin Bennett',
-                    // phone: '877-444-3432,
-                    // adults: 1,
-                    // email: 'boristotle@hotmail.com',
-                    // kids: 0,
-                    // pets: 0,
-                    // totalPrice: 299.7,
-                    // taxes: 29.7,
-                    // checkin: '5/25/2021',
-                    // checkout: '5/31/2021',
-                    // unitType: 'motorhome-towing',
-                    // selectedSite:
-                    //     {
-                    //         id: 1,
-                    //         number: 1,
-                    //         price: 45,
-                    //         createdAt: '2020-08-23T12:39:01.141Z',
-                    //         updatedAt: '2020-08-23T12:39:01.141Z'
-                    //     }
-                    // }
-            const booking = req.body;
-
-            booking.startDate = new Date(
-                booking.startDate.slice(6,10),
-                booking.startDate.slice(0,2) - 1,
-                booking.startDate.slice(3,5),
-                -4,
-                0,
-                0,
-                0
-            );
-
-            booking.endDate = new Date(
-                booking.endDate.slice(6,10),
-                booking.endDate.slice(0,2) - 1,
-                booking.endDate.slice(3,5),
-                -4,
-                0,
-                0,
-                0
-            );
-
-            // TODO:  add a before save hook that checks that the site isn't already booked
-            const savedBooking = await Booking.create(booking);
-
-            return res.json(savedBooking);
-
-        } catch (err) {
-            res.status = 400;
-            return res.json(err);
-        }  
-});
 
 router.post('/stats',
     async function (req, res, next) {
