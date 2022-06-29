@@ -16,28 +16,28 @@ router.get("/", (req, res) => {
 async function saveReservationAfterPayment(data) {
     const booking = {...data, SiteId: data.selectedSite.id};
 
-            const startDate = booking.startDate.split('/');
-            const endDate = booking.endDate.split('/');
+            booking.startDate = booking.checkin;
+            booking.endDate = booking.checkout;
 
-            booking.startDate = new Date(
-                startDate[2],
-                startDate[1],
-                startDate[0],
-                -4,
-                0,
-                0,
-                0
-            );
+            // booking.startDate = new Date(
+            //     startDate[0],
+            //     startDate[1],
+            //     startDate[2],
+            //     -4,
+            //     0,
+            //     0,
+            //     0
+            // );
 
-            booking.endDate = new Date(
-                endDate[2],
-                endDate[1],
-                endDate[0],
-                -4,
-                0,
-                0,
-                0
-            );
+            // booking.endDate = new Date(
+            //     endDate[0],
+            //     endDate[1],
+            //     endDate[2],
+            //     -4,
+            //     0,
+            //     0,
+            //     0
+            // );
 
     const savedBooking = await Booking.create(booking);
 
@@ -143,7 +143,7 @@ router.post('/available-sites',
     async function(req, res, next) {
         try {
             const bookingInfo = req.body; //{ startDate: 'MM/DD/YYYY', endDate: 'MM/DD/YYYY', type?: 'travel-trailer'}
-            // console.log('bookingInfo', bookingInfo);
+            console.log('bookingInfo', bookingInfo);
    
             // to find all bookings for this time frame
             // "startDate": "10/12/2020", unavailable if startDate is greater than bookingInfo.startDate and startDate less than bookingInfo.endDate AND
@@ -166,7 +166,7 @@ router.post('/available-sites',
             const hours = Math.abs(new Date(bookingInfo.endDate).getTime() - new Date(bookingInfo.startDate).getTime()) / 3600000;
             const numberOfNights = Math.round(hours / 24);
 
-            // console.log('bookingsDuringThisTimeFrame', bookingsDuringThisTimeFrame);
+            console.log('bookingsDuringThisTimeFrame', bookingsDuringThisTimeFrame);
             const unavailableSites = bookingsDuringThisTimeFrame.map(b => b.SiteId);
             console.log('unavailableSites', unavailableSites);
 
