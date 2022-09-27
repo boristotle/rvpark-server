@@ -19,6 +19,10 @@ module.exports = {
             key: "id"
         }
     },
+    status: {
+        type: Sequelize.ENUM,
+        values: ['pending', 'confirmed']
+    },
     unitType: {
         type: Sequelize.STRING,
     },
@@ -42,5 +46,8 @@ module.exports = {
     },
     endDate: {
         type: Sequelize.DATE
+    },
+    numberOfNights: {
+        type: Sequelize.INTEGER
     }
 };
