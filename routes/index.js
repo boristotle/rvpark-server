@@ -208,7 +208,8 @@ router.post('/available-sites',
                     order : [['SiteId', 'ASC'],['startDate','ASC']],
                     where: {
                         status: 'confirmed',
-                        startDate: { [op.gt]: new Date(`${new Date().getFullYear()}-01-01T05:00:00.000Z`) },
+                        // startDate: { [op.gt]: new Date(`${new Date().getFullYear()}-01-01T05:00:00.000Z`) },
+                        // startDate: { [op.gte]: new Date() },
                         endDate: { [op.lt]: new Date(`${new Date().getFullYear() + 1}-12-31T05:00:00.000Z`) },
                     }
                 });
@@ -220,8 +221,8 @@ router.post('/available-sites',
                 data.forEach((d, idx) => {
                     const dataYear = data[idx].startDate.getFullYear();
                     if (idx === 0) {
-                        dataClone.splice(idx, 0, {SiteId: d.SiteId, startDate: new Date(`${dataYear}-01-01T05:00:00.000Z`), endDate: new Date(`${dataYear}-01-01T05:00:00.000Z`)});
-                        numberOfAdds += 1;
+                        // dataClone.splice(idx, 0, {SiteId: d.SiteId, startDate: new Date(), endDate: new Date()});
+                        // numberOfAdds += 1;
                     } else if (data[idx + 1] && data[idx].SiteId !== data[idx + 1].SiteId) {
                         numberOfAdds += 1;
                         // ADD DEC 31 to end of each site availability
@@ -229,13 +230,13 @@ router.post('/available-sites',
                         
                         numberOfAdds += 1;
                         // ADD JAN 1 to front of each site availability
-                        dataClone.splice(idx + numberOfAdds, 0, {SiteId: data[idx + 1].SiteId, startDate: new Date(`${dataYear}-01-01T05:00:00.000Z`), endDate: new Date(`${dataYear}-01-01T05:00:00.000Z`)});
+                        dataClone.splice(idx + numberOfAdds, 0, {SiteId: data[idx + 1].SiteId, startDate: new Date(), endDate: new Date()});
                     } else if (!data[idx + 1]) {// if final index
                         dataClone.splice(dataClone.length, 0, {SiteId: data[idx - 1].SiteId, startDate: new Date(`${dataYear}-12-31T05:00:00.000Z`), endDate: new Date(`${dataYear}-12-31T05:00:00.000Z`)});
 
                     }
                 });
-                console.log('data', data);
+                // console.log('data', data);
                 console.log('dataClone', dataClone);
 
                 const availableDatesForSites = dataClone.reduce((prev, curr, idx) => {
@@ -244,7 +245,7 @@ router.post('/available-sites',
                     } else {
                         const startDate = dataClone[idx - 1].endDate.toLocaleDateString('en-US');
                         const endDate = curr.startDate.toLocaleDateString('en-US');
-                        if (startDate !== endDate) {
+                        if (startDate !== endDate && new Date(startDate) < new Date(endDate)) {
                             prev[curr.SiteId].push({startDate, endDate });
                         }
                     }
