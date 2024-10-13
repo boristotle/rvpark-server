@@ -27,6 +27,8 @@ const serverListen = function () {
 
 // ----- SET UP DB -----
 
+// TODO: currently only works with node version (12.22.1)
+
 const db = require('../services/data');
 
 //db.sync({force: true})

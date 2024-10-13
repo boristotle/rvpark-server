@@ -193,8 +193,14 @@ router.post('/available-sites',
                 }
             });
 
-            const hours = Math.abs(new Date(bookingInfo.endDate).getTime() - new Date(bookingInfo.startDate).getTime()) / 3600000;
-            const numberOfNights = Math.round(hours / 24);
+
+            let numberOfNights = 3;
+            if (bookingInfo.endDate) {
+                const hours = Math.abs(new Date(bookingInfo.endDate).getTime() - new Date(bookingInfo.startDate).getTime()) / 3600000;
+                numberOfNights = Math.round(hours / 24);
+            }
+
+
 
             // console.log('bookingsDuringThisTimeFrame', bookingsDuringThisTimeFrame);
             const unavailableSites = bookingsDuringThisTimeFrame.map(b => b.SiteId);
@@ -213,6 +219,8 @@ router.post('/available-sites',
                         endDate: { [op.lt]: new Date(`${new Date().getFullYear() + 1}-12-31T05:00:00.000Z`) },
                     }
                 });
+
+                console.log('bookingsAgg', bookingsAgg);
 
                 const data = bookingsAgg.map(b => b.dataValues)
                 const dataClone = data.slice();

@@ -44,7 +44,7 @@
     "read-chunk": "^2.1.0",
     "readdirp": "^2.1.0",
     "sanitize-filename": "^1.6.1",
-    "sequelize": "^4.23.2",
+    "sequelize": "^6.0.0",
     "sequelize-auto-migrations": "^1.0.2",
     "serve-favicon": "~2.4.5",
     "stripe": "^8.142.0",
