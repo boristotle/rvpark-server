@@ -36,10 +36,10 @@ module.exports = {
         type: Sequelize.INTEGER
     },
     totalPrice: {
-        type: Sequelize.INTEGER
+        type: Sequelize.FLOAT
     },
     taxes: {
-        type: Sequelize.INTEGER
+        type: Sequelize.FLOAT
     },
     startDate: {
         type: Sequelize.DATE

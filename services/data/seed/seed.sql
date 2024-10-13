@@ -23,10 +23,10 @@ SET client_min_messages = warning;
 --
 
 
-INSERT INTO public."Sites" ("id", "number", "price", "createdAt", "updatedAt") VALUES (default, 1, 45, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
-INSERT INTO public."Sites" ("id", "number", "price", "createdAt", "updatedAt") VALUES (default, 2, 45, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
-INSERT INTO public."Sites" ("id", "number", "price", "createdAt", "updatedAt") VALUES (default, 3, 45, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
-INSERT INTO public."Sites" ("id", "number", "price", "createdAt", "updatedAt") VALUES (default, 4, 45, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO public."Sites" ("id", "number", "price", "createdAt", "updatedAt") VALUES (default, 1, 45.00, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO public."Sites" ("id", "number", "price", "createdAt", "updatedAt") VALUES (default, 2, 45.00, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO public."Sites" ("id", "number", "price", "createdAt", "updatedAt") VALUES (default, 3, 45.00, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO public."Sites" ("id", "number", "price", "createdAt", "updatedAt") VALUES (default, 4, 45.00, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 insert INTO public."Bookings" ("id", "firstName", "lastName", "SiteId", "unitType", "pets", "kids", "adults", "price", "startDate","endDate", "createdAt",  "updatedAt") VALUES (
     default,
