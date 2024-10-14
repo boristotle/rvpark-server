@@ -336,7 +336,9 @@ router.post('/stats',
             return res.json({
                 timePeriod: `${bookingInfo.startDate} - ${bookingInfo.endDate}`,
                 revenue,
-                occupancy
+                occupancy,
+                totalDaysBookedAllSites: numberOfDaysBooked,
+                totalDaysAvailableAllSites: numberOfDaysAvailable * numberOfSites,
             });
 
         } catch (err) {
