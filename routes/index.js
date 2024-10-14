@@ -7,6 +7,7 @@ const SECRET_KEY = 'sk_test_51HLYv6AazfTTlzsudZHq6getr2dY3yIk93tRh6ZjiUYhoKCDOUR
 const stripe = require("stripe")(SECRET_KEY);
 const uuid = require('uuid');
 const TAXES = .11;
+const _ = require('lodash');
 // const UserModel = db.models.User;
 // const userEmails = require('../services/email').user;
 // const dataMethods = require('../services/data-methods');
@@ -220,10 +221,11 @@ router.post('/available-sites',
                     }
                 });
 
-                console.log('bookingsAgg', bookingsAgg);
+                console.log('bookingsAgg', bookingsAgg)
 
-                const data = bookingsAgg.map(b => b.dataValues)
+                const data = bookingsAgg.map(b => b.dataValues);
                 const dataClone = data.slice();
+                // console.log('dataClone', dataClone);
 
                 let numberOfAdds = 0;
                 data.forEach((d, idx) => {
@@ -237,6 +239,7 @@ router.post('/available-sites',
                         dataClone.splice(idx + numberOfAdds, 0, {SiteId: data[idx - 1].SiteId, startDate: new Date(`${dataYear}-12-31T05:00:00.000Z`), endDate: new Date(`${dataYear}-12-31T05:00:00.000Z`)});
                         
                         numberOfAdds += 1;
+
                         // ADD JAN 1 to front of each site availability
                         dataClone.splice(idx + numberOfAdds, 0, {SiteId: data[idx + 1].SiteId, startDate: new Date(), endDate: new Date()});
                     } else if (!data[idx + 1]) {// if final index
@@ -244,8 +247,9 @@ router.post('/available-sites',
 
                     }
                 });
+                // console.log('availableSitesObj', availableSitesObj);
                 // console.log('data', data);
-                console.log('dataClone', dataClone);
+                // console.log('dataClone', dataClone);
 
                 const availableDatesForSites = dataClone.reduce((prev, curr, idx) => {
                     if (!prev[curr.SiteId]) {
@@ -261,7 +265,13 @@ router.post('/available-sites',
 
                 }, {});
 
-                console.log('availableDates', availableDatesForSites);
+                
+
+                // console.log('availableDates', availableDatesForSites);
+                console.log('numberOfNights', numberOfNights);
+                for (const key in availableDatesForSites) {
+                    availableDatesForSites[key] = _.uniqBy(availableDatesForSites[key], 'startDate');
+                }
 
             return res.json({ availableSites, numberOfNights, availableDatesForSites });
            
