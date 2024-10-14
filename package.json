@@ -2,6 +2,10 @@
   "name": "rvpark",
   "version": "0.0.1",
   "private": true,
+  "engines": {
+    "node": "18.20.2",
+    "npm": "10.5.0"
+  },
   "scripts": {
     "start": "nodemon ./bin/www",
     "debug": "node --inspect-brk  ./bin/www",
@@ -38,13 +42,13 @@
     "nodemailer": "^4.4.0",
     "nodemon": "^1.11.0",
     "object-hash": "^1.2.0",
-    "pg": "^6.4.2",
+    "pg": "^8.7.3",
     "pm2": "^2.4.2",
     "promise": "^8.0.1",
     "read-chunk": "^2.1.0",
     "readdirp": "^2.1.0",
     "sanitize-filename": "^1.6.1",
-    "sequelize": "^6.0.0",
+    "sequelize": "^6.20.1",
     "sequelize-auto-migrations": "^1.0.2",
     "serve-favicon": "~2.4.5",
     "stripe": "^8.142.0",
@@ -52,5 +56,7 @@
     "unirest": "^0.5.1",
     "uuid": "^3.4.0"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "sequelize-cli": "^6.4.1"
+  }
 }
