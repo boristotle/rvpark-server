@@ -54,11 +54,16 @@ router.post("/payment", async (req, res) => {
             res.status = 400;
             return res.json({error: 'Site has just been booked. Please select a different site.'})
         }
+
+        const selectedSite = await Site.findOne({where: { id: req.body.selectedSite.id }});
        
+        const hours = Math.abs(new Date(req.body.checkin).getTime() - new Date(req.body.checkout).getTime()) / 3600000;
+        const numberOfNights = Math.round(hours / 24);
+
         const savedBooking = await Booking.create({
-            numberOfNights: req.body.numberOfNights,
-            totalPrice: req.body.numberOfNights * req.body.selectedSite.price,
-            taxes: (req.body.numberOfNights * req.body.selectedSite.price) * TAXES,
+            numberOfNights,
+            totalPrice: numberOfNights * selectedSite.price,
+            taxes: (numberOfNights * selectedSite.price) * TAXES,
             status: 'pending',
             startDate: new Date(req.body.checkin).toLocaleDateString('en-US'),
             endDate: new Date(req.body.checkout).toLocaleDateString('en-US'),
