@@ -1,7 +1,7 @@
 'use strict';
 const router = require('express').Router();
 const db = require('../services/data');
-const { Site, Booking } = db.models;
+const { Site, Booking, Discount } = db.models;
 const op = require('sequelize').Op;
 const SECRET_KEY = 'sk_test_51HLYv6AazfTTlzsudZHq6getr2dY3yIk93tRh6ZjiUYhoKCDOUR6Adc2ryW8TsHIgeUvzjwh36dArtFUoc46yFbE007MXNgof6'
 const stripe = require("stripe")(SECRET_KEY);
@@ -55,7 +55,19 @@ router.post("/payment", async (req, res) => {
             return res.json({error: 'Site has just been booked. Please select a different site.'})
         }
 
-        const selectedSite = await Site.findOne({where: { id: req.body.selectedSite.id }});
+        const selectedSite = await Site.findOne({where: { id: req.body.selectedSite.id },
+            include: [
+                {   model: Discount,
+                    where: { 
+                        // do not fetch any discounts greater than 50%
+                        percentageDiscount: {[op.lte]: .5},
+                        startDate: {[op.lt]: new Date(req.body.checkin)},
+                        endDate: {[op.gt]: new Date(req.body.checkout)},
+                    }
+                }
+            ]});
+
+        selectedSite.price = selectedSite.Discounts ? (1 - selectedSite.Discounts[0].percentageDiscount * selectedSite.price) : selectedSite.price;
        
         const hours = Math.abs(new Date(req.body.checkin).getTime() - new Date(req.body.checkout).getTime()) / 3600000;
         const numberOfNights = Math.round(hours / 24);
@@ -212,7 +224,27 @@ router.post('/available-sites',
             const unavailableSites = bookingsDuringThisTimeFrame.map(b => b.SiteId);
             // console.log('unavailableSites', unavailableSites);
 
-            const availableSites = await Site.findAll({where: { id: {[op.notIn]: unavailableSites}}});
+            const availableSites = await Site.findAll({where: { id: {[op.notIn]: unavailableSites}},
+                include: [
+                    {   model: Discount,
+                        required: false,
+                        where: { 
+                            // do not fetch any discounts greater than 50%
+                            percentageDiscount: {[op.lte]: .5},
+                            startDate: {[op.lte]: new Date(bookingInfo.startDate)},
+                            endDate: {[op.gte]: new Date(bookingInfo.endDate)},
+                        }
+                    }
+                ]}
+            );
+            console.log('availablesites', availableSites);
+
+            availableSites.forEach(site => {
+                site.price = site.Discounts.length ? (1 - site.Discounts[0].percentageDiscount) * site.price : site.price;
+                console.log('site.price', site.price);
+                delete site.dataValues.Discounts;
+                return site;
+            });
 
             // if (availableSites.length === 0) {// if none available, find all available sites with a month 
                 const bookingsAgg = await Booking.findAll({
@@ -226,7 +258,7 @@ router.post('/available-sites',
                     }
                 });
 
-                console.log('bookingsAgg', bookingsAgg)
+                // console.log('bookingsAgg', bookingsAgg)
 
                 const data = bookingsAgg.map(b => b.dataValues);
                 const dataClone = data.slice();
@@ -273,7 +305,7 @@ router.post('/available-sites',
                 
 
                 // console.log('availableDates', availableDatesForSites);
-                console.log('numberOfNights', numberOfNights);
+                // console.log('numberOfNights', numberOfNights);
                 for (const key in availableDatesForSites) {
                     availableDatesForSites[key] = _.uniqBy(availableDatesForSites[key], 'startDate');
                 }
@@ -281,7 +313,7 @@ router.post('/available-sites',
             return res.json({ availableSites, numberOfNights, availableDatesForSites });
            
         } catch (err) {
-            console.log('err', err);
+            // console.log('err', err);
             return res.json(err);
         }
 });
