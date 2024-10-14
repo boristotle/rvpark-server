@@ -294,6 +294,7 @@ router.post('/stats',
             // Find all bookings between the startDate and endDate
             const bookings = await Booking.findAll({
                 where: {
+                    status: 'confirmed',
                     [op.and]: [
                         {
                             startDate: { [op.gt]: new Date(bookingInfo.startDate) },
@@ -314,23 +315,27 @@ router.post('/stats',
             let numberOfDaysBooked = 0;
             bookings.forEach((b) => {
                 // console.log('b', b);
-                const hours = Math.abs(new Date(b.endDate).getTime() - new Date(b.startDate).getTime()) / 3600000;
+                const endDate = new Date(b.endDate) > new Date(bookingInfo.endDate) ? bookingInfo.endDate : b.endDate;
+                const hours = Math.abs(new Date(endDate).getTime() - new Date(b.startDate).getTime()) / 3600000;
                 const numberOfDays = Math.round(hours / 24);
                 numberOfDaysBooked += numberOfDays;
             });
             // console.log('numberOfDaysBooked', numberOfDaysBooked);
 
             // earnings for time frame
-            const income = bookings.reduce((acc, inc) => acc + inc.price, 0);
+            const revenue = bookings.reduce((acc, inc) => acc + inc.totalPrice + inc.taxes, 0);
            
             // occupancy rate for time frame
             const numberOfSites = await Site.count();
             // console.log('numberOfSites', numberOfSites);
             const occupancy = (numberOfDaysBooked / (numberOfSites * numberOfDaysAvailable) * 100).toFixed(2);
+            // console.log('numberOfsites',numberOfSites);
+            // console.log('numberOfDaysBooked', numberOfDaysBooked)
+            // console.log('numberOfDaysAvailable', numberOfDaysAvailable)
             // occupancy = number of sites * number of days / number of days booked
             return res.json({
                 timePeriod: `${bookingInfo.startDate} - ${bookingInfo.endDate}`,
-                income,
+                revenue,
                 occupancy
             });
 
