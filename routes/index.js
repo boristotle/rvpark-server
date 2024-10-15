@@ -58,6 +58,7 @@ router.post("/payment", async (req, res) => {
         const selectedSite = await Site.findOne({where: { id: req.body.selectedSite.id },
             include: [
                 {   model: Discount,
+                    required: false,
                     where: { 
                         // do not fetch any discounts greater than 50%
                         percentageDiscount: {[op.lte]: .5},
@@ -67,7 +68,7 @@ router.post("/payment", async (req, res) => {
                 }
             ]});
 
-        selectedSite.price = selectedSite.Discounts ? (1 - selectedSite.Discounts[0].percentageDiscount * selectedSite.price) : selectedSite.price;
+        selectedSite.price = selectedSite.Discounts.length ? (1 - selectedSite.Discounts[0].percentageDiscount * selectedSite.price) : selectedSite.price;
        
         const hours = Math.abs(new Date(req.body.checkin).getTime() - new Date(req.body.checkout).getTime()) / 3600000;
         const numberOfNights = Math.round(hours / 24);
@@ -190,7 +191,7 @@ router.post('/available-sites',
     async function(req, res, next) {
         try {
             const bookingInfo = req.body; //{ startDate: 'MM/DD/YYYY', endDate: 'MM/DD/YYYY', type?: 'travel-trailer'}
-            console.log('bookingInfo', bookingInfo);
+            // console.log('bookingInfo', bookingInfo);
    
             // to find all bookings for this time frame
             // "startDate": "10/12/2020", unavailable if startDate is greater than bookingInfo.startDate and startDate less than bookingInfo.endDate AND
@@ -237,11 +238,11 @@ router.post('/available-sites',
                     }
                 ]}
             );
-            console.log('availablesites', availableSites);
+            // console.log('availablesites', availableSites);
 
             availableSites.forEach(site => {
                 site.price = site.Discounts.length ? (1 - site.Discounts[0].percentageDiscount) * site.price : site.price;
-                console.log('site.price', site.price);
+                // console.log('site.price', site.price);
                 delete site.dataValues.Discounts;
                 return site;
             });
@@ -261,55 +262,78 @@ router.post('/available-sites',
                 // console.log('bookingsAgg', bookingsAgg)
 
                 const data = bookingsAgg.map(b => b.dataValues);
-                const dataClone = data.slice();
+                // const dataClone = data.slice();
                 // console.log('dataClone', dataClone);
 
-                let numberOfAdds = 0;
-                // data = data.sort((a,b) => a.SiteId - b.SiteId);
-                data.forEach((d, idx) => {
-                    // console.log('d ata', d);
-                    const dataYear = data[idx].startDate.getFullYear();
-                    if (idx === 0) {
-                        // dataClone.splice(idx, 0, {SiteId: d.SiteId, startDate: new Date(), endDate: new Date()});
-                        // numberOfAdds += 1;
-                    } else if (data[idx + 1] && data[idx].SiteId !== data[idx + 1].SiteId) {
-                        numberOfAdds += 1;
-                        // ADD DEC 31 to end of each site availability
-                        dataClone.splice(idx + numberOfAdds, 0, {SiteId: data[idx].SiteId, startDate: new Date(`${dataYear}-12-31T05:00:00.000Z`), endDate: new Date(`${dataYear}-12-31T05:00:00.000Z`)});
+                // let numberOfAdds = 0;
+                // // data = data.sort((a,b) => a.SiteId - b.SiteId);
+                // data.forEach((d, idx) => {
+                //     // console.log('d ata', d);
+                //     const dataYear = data[idx].startDate.getFullYear();
+                //     if (idx === 0) {
+                //         // dataClone.splice(idx, 0, {SiteId: d.SiteId, startDate: new Date(), endDate: new Date()});
+                //         // numberOfAdds += 1;
+                //     } else if (d.SiteId) {
+                //         numberOfAdds += 1;
+                //         // ADD DEC 31 to end of each site availability
+                //         dataClone.splice(idx + numberOfAdds, 0, {SiteId: data[idx].SiteId, startDate: new Date(`${dataYear}-12-31T05:00:00.000Z`), endDate: new Date(`${dataYear}-12-31T05:00:00.000Z`)});
                         
-                        // numberOfAdds += 1;
+                //         // numberOfAdds += 1;
 
-                        // ADD JAN 1 to front of each site availability
-                        // dataClone.splice(idx + numberOfAdds, 0, {SiteId: data[idx + 1].SiteId, startDate: new Date(), endDate: new Date()});
-                        dataClone.splice(dataClone.length, idx, {SiteId: data[idx].SiteId, startDate: new Date(`${dataYear}-12-31T05:00:00.000Z`), endDate: new Date(`${dataYear}-12-31T05:00:00.000Z`)});
-                        // dataClone.splice(dataClone.length, idx, {SiteId: data[idx - 1].SiteId, startDate: new Date(`${dataYear}-12-31T05:00:00.000Z`), endDate: new Date(`${dataYear}-12-31T05:00:00.000Z`)});
+                //         // ADD JAN 1 to front of each site availability
+                //         // dataClone.splice(idx + numberOfAdds, 0, {SiteId: data[idx + 1].SiteId, startDate: new Date(), endDate: new Date()});
+                //         dataClone.splice(dataClone.length, 0, {SiteId: data[idx].SiteId, startDate: new Date(`${dataYear}-12-31T05:00:00.000Z`), endDate: new Date(`${dataYear}-12-31T05:00:00.000Z`)});
+                //         // dataClone.splice(dataClone.length, idx, {SiteId: data[idx - 1].SiteId, startDate: new Date(`${dataYear}-12-31T05:00:00.000Z`), endDate: new Date(`${dataYear}-12-31T05:00:00.000Z`)});
 
-                    }
-                });
+                //     }
+                // });
 
-                const availableDatesForSites = dataClone.reduce((prev, curr, idx) => {
-                    if (!prev[curr.SiteId]) {
-                        prev[curr.SiteId] = [];
+                // console.log('dataClone', data);
+
+                const availableDatesForSites = data.reduce((prev, curr, idx) => {
+                    // console.log('prev', prev);
+                    // console.log('curr', curr)
+                    
+                    if (curr.SiteId === data[idx + 1].SiteId) {
+                        if (!prev[curr.SiteId]) {
+                            prev[curr.SiteId] = [{SiteId: curr.SiteId, startDate: curr.endDate.toLocaleDateString('en-US'), endDate: data[idx + 1] ? data[idx + 1].startDate.toLocaleDateString('en-US') : 'NA' }];
+                        } else {
+                            // const isSameSite = dataClone[idx - 1].SiteId === curr.SiteId;
+                            const startDate = data[idx - 1].endDate.toLocaleDateString('en-US');
+                            const endDate = curr.startDate.toLocaleDateString('en-US');
+                            if (startDate !== endDate && new Date(startDate) < new Date(endDate)) {
+                                prev[curr.SiteId].push({SiteId: curr.SiteId, startDate: curr.endDate.toLocaleDateString('en-US'), endDate: data[idx + 1] ? data[idx + 1].startDate.toLocaleDateString('en-US') : 'NA' });
+                            } 
+                            // else if (!isSameSite) {
+                            //     prev[curr.SiteId].push({
+                            //         startDate: dataClone[idx - 1].endDate.toLocaleDateString('en-US'),
+                            //         endDate: new Date(`${dataYear}-12-31T05:00:00.000Z`).toLocaleDateString('en-US')
+                            //     })
+                                
+                            // }
+                        }
                     } else {
-                        const isSameSite = dataClone[idx - 1].SiteId === curr.SiteId;
-                        const startDate = dataClone[idx - 1].endDate.toLocaleDateString('en-US');
-                        const endDate = curr.startDate.toLocaleDateString('en-US');
-                        if (isSameSite && startDate !== endDate && new Date(startDate) < new Date(endDate)) {
-                            prev[curr.SiteId].push({startDate, endDate });
+                        if (!prev[curr.SiteId]) {
+                            prev[curr.SiteId] = [{SiteId: curr.SiteId, startDate: curr.endDate.toLocaleDateString('en-US'), endDate: data[idx + 1].startDate.toLocaleDateString('en-US') }];
+                        } else {
+                            // prev[curr.SiteId].push({SiteId: curr.SiteId, startDate: curr.endDate.toLocaleDateString('en-US'), endDate: data[idx + 1].startDate.toLocaleDateString('en-US') });
                         }
                     }
+                    console.log('prev', prev);
+
                     return prev;
 
                 }, {});
 
-                
+                // console.log('availableDatesForSites', availableDatesForSites);
+
 
                 // console.log('availableDates', availableDatesForSites);
                 // console.log('numberOfNights', numberOfNights);
-                for (const key in availableDatesForSites) {
-                    availableDatesForSites[key] = _.uniqBy(availableDatesForSites[key], 'startDate');
-                    if (!availableDatesForSites[key].length) { delete  availableDatesForSites[key] }
-                }
+                // for (const key in availableDatesForSites) {
+                //     availableDatesForSites[key] = _.uniqBy(availableDatesForSites[key], 'startDate');
+                //     // if (!availableDatesForSites[key].length) { delete  availableDatesForSites[key] }
+                // }
 
             return res.json({ availableSites, numberOfNights, availableDatesForSites });
            
