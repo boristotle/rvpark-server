@@ -290,40 +290,52 @@ router.post('/available-sites',
 
                 // console.log('dataClone', data);
 
-                const availableDatesForSites = data.reduce((prev, curr, idx) => {
-                    // console.log('prev', prev);
-                    // console.log('curr', curr)
-                    
-                    if (curr.SiteId === data[idx + 1].SiteId) {
-                        if (!prev[curr.SiteId]) {
-                            prev[curr.SiteId] = [{SiteId: curr.SiteId, startDate: curr.endDate.toLocaleDateString('en-US'), endDate: data[idx + 1] ? data[idx + 1].startDate.toLocaleDateString('en-US') : 'NA' }];
-                        } else {
-                            // const isSameSite = dataClone[idx - 1].SiteId === curr.SiteId;
-                            const startDate = data[idx - 1].endDate.toLocaleDateString('en-US');
-                            const endDate = curr.startDate.toLocaleDateString('en-US');
-                            if (startDate !== endDate && new Date(startDate) < new Date(endDate)) {
-                                prev[curr.SiteId].push({SiteId: curr.SiteId, startDate: curr.endDate.toLocaleDateString('en-US'), endDate: data[idx + 1] ? data[idx + 1].startDate.toLocaleDateString('en-US') : 'NA' });
-                            } 
-                            // else if (!isSameSite) {
-                            //     prev[curr.SiteId].push({
-                            //         startDate: dataClone[idx - 1].endDate.toLocaleDateString('en-US'),
-                            //         endDate: new Date(`${dataYear}-12-31T05:00:00.000Z`).toLocaleDateString('en-US')
-                            //     })
-                                
-                            // }
-                        }
+                const datamap = data.reduce((prev, curr) => {
+                    if (!prev[curr.SiteId]) {
+                        prev[curr.SiteId] = [curr];
                     } else {
-                        if (!prev[curr.SiteId]) {
-                            prev[curr.SiteId] = [{SiteId: curr.SiteId, startDate: curr.endDate.toLocaleDateString('en-US'), endDate: data[idx + 1].startDate.toLocaleDateString('en-US') }];
-                        } else {
-                            // prev[curr.SiteId].push({SiteId: curr.SiteId, startDate: curr.endDate.toLocaleDateString('en-US'), endDate: data[idx + 1].startDate.toLocaleDateString('en-US') });
-                        }
+                        prev[curr.SiteId].push(curr);
                     }
-                    console.log('prev', prev);
-
                     return prev;
-
                 }, {});
+
+                // console.log('datampa', datamap);
+
+                // const availableDatesForSites = data.reduce((prev, curr, idx) => {
+                //     // console.log('prev', prev);
+                //     // console.log('curr', curr)
+
+                    
+                //     if (curr.SiteId === data[idx + 1].SiteId) {
+                //         if (!prev[curr.SiteId] && curr.endDate !== prev.startDate) {
+                //             prev[curr.SiteId] = [{SiteId: curr.SiteId, startDate: curr.endDate.toLocaleDateString('en-US'), endDate: data[idx + 1] ? data[idx + 1].startDate.toLocaleDateString('en-US') : 'NA' }];
+                //         } else {
+                //             // const isSameSite = dataClone[idx - 1].SiteId === curr.SiteId;
+                //             const startDate = data[idx - 1].endDate.toLocaleDateString('en-US');
+                //             const endDate = curr.startDate.toLocaleDateString('en-US');
+                //             if (startDate !== endDate && new Date(startDate) < new Date(endDate)) {
+                //                 prev[curr.SiteId].push({SiteId: curr.SiteId, startDate: curr.endDate.toLocaleDateString('en-US'), endDate: data[idx + 1] ? data[idx + 1].startDate.toLocaleDateString('en-US') : 'NA' });
+                //             } 
+                //             // else if (!isSameSite) {
+                //             //     prev[curr.SiteId].push({
+                //             //         startDate: dataClone[idx - 1].endDate.toLocaleDateString('en-US'),
+                //             //         endDate: new Date(`${dataYear}-12-31T05:00:00.000Z`).toLocaleDateString('en-US')
+                //             //     })
+                                
+                //             // }
+                //         }
+                //     } else {
+                //         if (!prev[curr.SiteId] && curr.endDate !== prev.startDate) {
+                //             prev[curr.SiteId] = [{SiteId: curr.SiteId, startDate: curr.endDate.toLocaleDateString('en-US'), endDate: data[idx + 1].startDate.toLocaleDateString('en-US') }];
+                //         } else {
+                //             // prev[curr.SiteId].push({SiteId: curr.SiteId, startDate: curr.endDate.toLocaleDateString('en-US'), endDate: data[idx + 1].startDate.toLocaleDateString('en-US') });
+                //         }
+                //     }
+                //     console.log('prev', prev);
+
+                //     return prev;
+
+                // }, {});
 
                 // console.log('availableDatesForSites', availableDatesForSites);
 
@@ -335,7 +347,80 @@ router.post('/available-sites',
                 //     // if (!availableDatesForSites[key].length) { delete  availableDatesForSites[key] }
                 // }
 
-            return res.json({ availableSites, numberOfNights, availableDatesForSites });
+                const availableDatesForSites = {};
+                // console.log('availableDatesForSites', availableDatesForSites)
+                for (const key in datamap) {
+                    // console.log('key', key);
+                    // console.log('datamap[key]', datamap[key].length);
+                    if (datamap[key].length === 1) {
+                        const data = datamap[key][0];
+                        const SiteId = data.SiteId;
+                        const startDate = new Date(data.endDate).toLocaleDateString('en-US')
+                        const endDate = new Date(`${new Date().getFullYear()}-12-31T05:00:00.000Z`).toLocaleDateString('en-US')
+                        availableDatesForSites[key] = [{SiteId, startDate, endDate }];
+                        // console.log('availableDatesForSites[key]', availableDatesForSites[key])
+                    }
+
+                    for (let i = 0; i < datamap[key].length - 1; i++) {
+                        // console.log('i1', i);
+                        // console.log('key', key);
+   
+                        // console.log(' datamap[key][i=1]',  datamap[key][i + 1])
+                        const data = datamap[key][i];
+                        // console.log('data', datamap[key][i + 1]);
+                        // console.log('key', key)
+                        if (datamap[key][i + 1] && data.endDate < datamap[key][i + 1].startDate) {
+                            const SiteId = data.SiteId;
+                            const startDate = new Date(data.endDate).toLocaleDateString('en-US')
+                            const endDate = new Date(datamap[key][i + 1].startDate).toLocaleDateString('en-US');
+                            // console.log('!availableDatesForSites[key]', availableDatesForSites[key])
+                            if (!availableDatesForSites[key]) {
+                                // console.log('1');
+                                availableDatesForSites[key] = [{SiteId, startDate, endDate }];
+                            } else {
+                                // console.log('2');
+                                availableDatesForSites[key].push({SiteId, startDate, endDate });
+                            }
+                        } 
+
+                        //&& new Date().getFullYear() === new Date(datamap[key][datamap[key].length - 1]).getFullYear()
+                        if (i === datamap[key].length - 2) {
+                            const SiteId = datamap[key][datamap[key].length - 1].SiteId;
+                        
+                            const startDate = new Date(datamap[key][datamap[key].length - 1].endDate).toLocaleDateString('en-US')
+                            const endDate = new Date(`${new Date().getFullYear()}-12-31T05:00:00.000Z`).toLocaleDateString('en-US')
+                            // if (startDate.getFullYear() > endDate.getFullYear()) {
+                            //     return;
+                            // }
+                            console.log('startdate',startDate)
+                            console.log('enddate', endDate);
+                            if (new Date(startDate).getFullYear() <= new Date(endDate).getFullYear()) {
+                                if (!availableDatesForSites[key]) {
+                                    // console.log('3');
+                                    availableDatesForSites[key] = [{SiteId, startDate, endDate }];
+                                } else {
+                                    // console.log('4');
+                                    availableDatesForSites[key].push({SiteId, startDate, endDate });
+                                }
+                            }
+     
+                        }
+
+                        // console.log('availableDatesForSites', availableDatesForSites);
+                    }
+
+                    console.log('availableDatesForSites[key]6', availableDatesForSites)
+  
+    
+                }
+
+        
+
+            return res.json({
+                availableSites,
+                numberOfNights,
+                availableDatesForSites
+             });
            
         } catch (err) {
             // console.log('err', err);
