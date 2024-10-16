@@ -371,7 +371,7 @@ router.post('/available-sites',
                         // console.log('key', key)
                         if (datamap[key][i + 1] && data.endDate < datamap[key][i + 1].startDate) {
                             const SiteId = data.SiteId;
-                            const startDate = new Date(data.endDate).toLocaleDateString('en-US')
+                            const startDate = new Date(data.endDate).toLocaleDateString('en-US');
                             const endDate = new Date(datamap[key][i + 1].startDate).toLocaleDateString('en-US');
                             // console.log('!availableDatesForSites[key]', availableDatesForSites[key])
                             if (!availableDatesForSites[key]) {
@@ -387,8 +387,12 @@ router.post('/available-sites',
                         if (i === datamap[key].length - 2) {
                             const SiteId = datamap[key][datamap[key].length - 1].SiteId;
                         
-                            const startDate = new Date(datamap[key][datamap[key].length - 1].endDate).toLocaleDateString('en-US')
+                            const startDate = new Date(datamap[key][datamap[key].length - 1].endDate).toLocaleDateString('en-US');
                             const endDate = new Date(`${new Date().getFullYear()}-12-31T05:00:00.000Z`).toLocaleDateString('en-US')
+                            // if (new Date(bookingInfo.endDate) > new Date(`${new Date().getFullYear()}-12-31T05:00:00.000Z`)) {
+                            //     endDate = new Date(bookingInfo.endDate);
+                            // }
+                          
                             // if (startDate.getFullYear() > endDate.getFullYear()) {
                             //     return;
                             // }
