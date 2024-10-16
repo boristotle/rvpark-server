@@ -262,33 +262,6 @@ router.post('/available-sites',
                 // console.log('bookingsAgg', bookingsAgg)
 
                 const data = bookingsAgg.map(b => b.dataValues);
-                // const dataClone = data.slice();
-                // console.log('dataClone', dataClone);
-
-                // let numberOfAdds = 0;
-                // // data = data.sort((a,b) => a.SiteId - b.SiteId);
-                // data.forEach((d, idx) => {
-                //     // console.log('d ata', d);
-                //     const dataYear = data[idx].startDate.getFullYear();
-                //     if (idx === 0) {
-                //         // dataClone.splice(idx, 0, {SiteId: d.SiteId, startDate: new Date(), endDate: new Date()});
-                //         // numberOfAdds += 1;
-                //     } else if (d.SiteId) {
-                //         numberOfAdds += 1;
-                //         // ADD DEC 31 to end of each site availability
-                //         dataClone.splice(idx + numberOfAdds, 0, {SiteId: data[idx].SiteId, startDate: new Date(`${dataYear}-12-31T05:00:00.000Z`), endDate: new Date(`${dataYear}-12-31T05:00:00.000Z`)});
-                        
-                //         // numberOfAdds += 1;
-
-                //         // ADD JAN 1 to front of each site availability
-                //         // dataClone.splice(idx + numberOfAdds, 0, {SiteId: data[idx + 1].SiteId, startDate: new Date(), endDate: new Date()});
-                //         dataClone.splice(dataClone.length, 0, {SiteId: data[idx].SiteId, startDate: new Date(`${dataYear}-12-31T05:00:00.000Z`), endDate: new Date(`${dataYear}-12-31T05:00:00.000Z`)});
-                //         // dataClone.splice(dataClone.length, idx, {SiteId: data[idx - 1].SiteId, startDate: new Date(`${dataYear}-12-31T05:00:00.000Z`), endDate: new Date(`${dataYear}-12-31T05:00:00.000Z`)});
-
-                //     }
-                // });
-
-                // console.log('dataClone', data);
 
                 const datamap = data.reduce((prev, curr) => {
                     if (!prev[curr.SiteId]) {
@@ -300,52 +273,6 @@ router.post('/available-sites',
                 }, {});
 
                 // console.log('datampa', datamap);
-
-                // const availableDatesForSites = data.reduce((prev, curr, idx) => {
-                //     // console.log('prev', prev);
-                //     // console.log('curr', curr)
-
-                    
-                //     if (curr.SiteId === data[idx + 1].SiteId) {
-                //         if (!prev[curr.SiteId] && curr.endDate !== prev.startDate) {
-                //             prev[curr.SiteId] = [{SiteId: curr.SiteId, startDate: curr.endDate.toLocaleDateString('en-US'), endDate: data[idx + 1] ? data[idx + 1].startDate.toLocaleDateString('en-US') : 'NA' }];
-                //         } else {
-                //             // const isSameSite = dataClone[idx - 1].SiteId === curr.SiteId;
-                //             const startDate = data[idx - 1].endDate.toLocaleDateString('en-US');
-                //             const endDate = curr.startDate.toLocaleDateString('en-US');
-                //             if (startDate !== endDate && new Date(startDate) < new Date(endDate)) {
-                //                 prev[curr.SiteId].push({SiteId: curr.SiteId, startDate: curr.endDate.toLocaleDateString('en-US'), endDate: data[idx + 1] ? data[idx + 1].startDate.toLocaleDateString('en-US') : 'NA' });
-                //             } 
-                //             // else if (!isSameSite) {
-                //             //     prev[curr.SiteId].push({
-                //             //         startDate: dataClone[idx - 1].endDate.toLocaleDateString('en-US'),
-                //             //         endDate: new Date(`${dataYear}-12-31T05:00:00.000Z`).toLocaleDateString('en-US')
-                //             //     })
-                                
-                //             // }
-                //         }
-                //     } else {
-                //         if (!prev[curr.SiteId] && curr.endDate !== prev.startDate) {
-                //             prev[curr.SiteId] = [{SiteId: curr.SiteId, startDate: curr.endDate.toLocaleDateString('en-US'), endDate: data[idx + 1].startDate.toLocaleDateString('en-US') }];
-                //         } else {
-                //             // prev[curr.SiteId].push({SiteId: curr.SiteId, startDate: curr.endDate.toLocaleDateString('en-US'), endDate: data[idx + 1].startDate.toLocaleDateString('en-US') });
-                //         }
-                //     }
-                //     console.log('prev', prev);
-
-                //     return prev;
-
-                // }, {});
-
-                // console.log('availableDatesForSites', availableDatesForSites);
-
-
-                // console.log('availableDates', availableDatesForSites);
-                // console.log('numberOfNights', numberOfNights);
-                // for (const key in availableDatesForSites) {
-                //     availableDatesForSites[key] = _.uniqBy(availableDatesForSites[key], 'startDate');
-                //     // if (!availableDatesForSites[key].length) { delete  availableDatesForSites[key] }
-                // }
 
                 const availableDatesForSites = {};
                 // console.log('availableDatesForSites', availableDatesForSites)
@@ -409,6 +336,17 @@ router.post('/available-sites',
                             }
      
                         }
+
+                        //TODO: get dates past the current year
+                        // if (i === datamap[key].length - 2) {
+                        //     console.log('here')
+                        //     const data = datamap[key][datamap[key].length - 2];
+                        //     console.log('dta', data);
+                        //     const SiteId = data.SiteId;
+                        //     const startDate = new Date(data.endDate).toLocaleDateString('en-US');
+                        //     const endDate = new Date(`${new Date().getFullYear() + 1}-12-31T05:00:00.000Z`).toLocaleDateString('en-US');
+                        //     availableDatesForSites[key].push({SiteId, startDate, endDate })
+                        // }
 
                         // console.log('availableDatesForSites', availableDatesForSites);
                     }
