@@ -369,7 +369,7 @@ router.post('/available-sites',
                         // console.log('availableDatesForSites', availableDatesForSites);
                     }
 
-                    console.log('availableDatesForSites[key]6', availableDatesForSites)
+                    // console.log('availableDatesForSites[key]6', availableDatesForSites)
   
     
                 }
@@ -377,7 +377,7 @@ router.post('/available-sites',
         
 
             return res.json({
-                availableSites,
+                availableSites: numberOfNights !== 0 ? availableSites : [],
                 numberOfNights,
                 availableDatesForSites
              });
