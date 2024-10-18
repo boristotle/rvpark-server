@@ -192,6 +192,14 @@ router.post('/available-sites',
         try {
             const bookingInfo = req.body; //{ startDate: 'MM/DD/YYYY', endDate: 'MM/DD/YYYY', type?: 'travel-trailer'}
             // console.log('bookingInfo', bookingInfo);
+
+            if (new Date(bookingInfo.startDate) < new Date(new Date().toLocaleDateString('en-US'))) {
+                return res.json({
+                    availableSites: [],
+                    numberOfNights: 0,
+                    availableDatesForSites: {}
+                 });
+            }
    
             // to find all bookings for this time frame
             // "startDate": "10/12/2020", unavailable if startDate is greater than bookingInfo.startDate and startDate less than bookingInfo.endDate AND
@@ -282,8 +290,11 @@ router.post('/available-sites',
                     if (datamap[key].length === 1) {
                         const data = datamap[key][0];
                         const SiteId = data.SiteId;
-                        const startDate = new Date(data.endDate).toLocaleDateString('en-US')
-                        const endDate = new Date(`${new Date().getFullYear()}-12-31T05:00:00.000Z`).toLocaleDateString('en-US')
+                        const startDate = new Date(data.endDate).toLocaleDateString('en-US');
+                        let endDate = new Date(`${new Date().getFullYear()}-12-31T05:00:00.000Z`).toLocaleDateString('en-US');
+                        if (new Date(bookingInfo.endDate) > new Date(`${new Date().getFullYear()}-12-31T05:00:00.000Z`)) {
+                                endDate = new Date(bookingInfo.endDate).toLocaleDateString();
+                        }
                         availableDatesForSites[key] = [{SiteId, startDate, endDate }];
                         // console.log('availableDatesForSites[key]', availableDatesForSites[key])
                     }
@@ -313,12 +324,19 @@ router.post('/available-sites',
                         //&& new Date().getFullYear() === new Date(datamap[key][datamap[key].length - 1]).getFullYear()
                         if (i === datamap[key].length - 2) {
                             const SiteId = datamap[key][datamap[key].length - 1].SiteId;
-                        
+                            let endDate = new Date(`${new Date().getFullYear()}-12-31T05:00:00.000Z`).toLocaleDateString('en-US')
                             const startDate = new Date(datamap[key][datamap[key].length - 1].endDate).toLocaleDateString('en-US');
-                            const endDate = new Date(`${new Date().getFullYear()}-12-31T05:00:00.000Z`).toLocaleDateString('en-US')
-                            // if (new Date(bookingInfo.endDate) > new Date(`${new Date().getFullYear()}-12-31T05:00:00.000Z`)) {
-                            //     endDate = new Date(bookingInfo.endDate);
+
+                            if (new Date(bookingInfo.endDate) > new Date(`${new Date().getFullYear()}-12-31T05:00:00.000Z`) && endDate > bookingInfo.endDate) {
+                                endDate = new Date(bookingInfo.endDate).toLocaleDateString('en-US');
+                            } 
+                            
+                            // else if (new Date(bookingInfo.endDate) > new Date(`${new Date().getFullYear()}-12-31T05:00:00.000Z`) && endDate < bookingInfo.endDate) {
+                            //     endDate = new Date(`${new Date(bookingInfo.endDate).getFullYear() + 1}-${new Date(bookingInfo.endDate).getMonth() + 1}-${new Date(bookingInfo.endDate).getDay()}-T05:00:00.000Z`).toLocaleDateString('en-US');
                             // }
+                        
+                            // const endDate = new Date(`${new Date().getFullYear()}-12-31T05:00:00.000Z`).toLocaleDateString('en-US')
+
                           
                             // if (startDate.getFullYear() > endDate.getFullYear()) {
                             //     return;
